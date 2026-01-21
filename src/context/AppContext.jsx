@@ -3,100 +3,82 @@ import { useParams } from "react-router-dom";
 
 export const AppContext = createContext();
 
-const API_URL =
-  "https://restcountries.com/v3.1/all?fields=name,flags,region,subregion,capital,population,cca3,tld,currencies,languages";
-
 function AppProvider({ children }) {
-  // ===== GLOBAL STATES =====
   const [isLoading, setIsLoading] = useState(true);
   const [data, setData] = useState([]);
   const [filteredCountries, setFilteredCountries] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRegion, setSelectedRegion] = useState(null);
 
-  // ===== LOADING HANDLER =====
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 300);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // ===== FETCH COUNTRIES =====
+  // Fetch countries
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(API_URL);
-
-        if (!res.ok) {
-          throw new Error("Failed to fetch countries");
-        }
-
-        const result = await res.json();
-        setData(result);
-        setFilteredCountries(result);
-      } catch (error) {
-        console.error("Error fetching data:", error.message);
+        const res = await fetch(
+          "https://restcountries.com/v3.1/all?fields=name,flags,region,subregion,capital,population,cca3,tld,currencies,languages"
+        );
+        const json = await res.json();
+        setData(json);
+        setFilteredCountries(json);
+        setIsLoading(false);
+      } catch (err) {
+        console.error(err);
+        setIsLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
-  // ===== SEARCH FILTER =====
+  // Search
   const handleSearchChange = (e) => {
     const query = e.target.value.toLowerCase();
     setSearchQuery(query);
 
-    const filtered = data.filter((country) =>
-      country.name.common.toLowerCase().includes(query)
+    setFilteredCountries(
+      data.filter((c) =>
+        c.name?.common?.toLowerCase().includes(query)
+      )
     );
-
-    setFilteredCountries(filtered);
   };
 
-  // ===== REGION FILTER =====
-  const handleSelectChange = (selectedOption) => {
-    setSelectedRegion(selectedOption?.value || null);
+  // Region filter
+  const handleSelectChange = (option) => {
+    setSelectedRegion(option?.value || null);
   };
 
-  // ===== FINAL DISPLAYED COUNTRIES =====
   const displayedCountries = (searchQuery ? filteredCountries : data).filter(
-  (country) => {
-    if (!selectedRegion) return true;
-    return country.region === selectedRegion.value;
-  }
-);
-
-  // ===== COUNTRY DETAILS PAGE =====
-  const { name } = useParams();
-
-  const formattedName = name
-    ?.replace(/\s+/g, "")
-    .toLowerCase();
-
-  const CountryObject = data.find(
-    (country) =>
-      country.name.common.replace(/\s+/g, "").toLowerCase() === formattedName
+    (c) => (selectedRegion ? c.region === selectedRegion : true)
   );
 
-  // ===== COUNTRY DETAILS SAFELY EXTRACTED =====
-  const COUNTRY_NAME = CountryObject?.name?.common || "";
-  const COUNTRY_OFFICIAL_NAME = CountryObject?.name?.official || "";
-  const COUNTRY_FLAG = CountryObject?.flags?.svg || "";
-  const COUNTRY_POPULATION = CountryObject?.population?.toLocaleString() || "";
-  const COUNTRY_REGION = CountryObject?.region || "";
-  const COUNTRY_SUB_REGION = CountryObject?.subregion || "";
-  const COUNTRY_CAPITAL = CountryObject?.capital?.join(", ") || "No Capital";
-  const COUNTRY_TLD = CountryObject?.tld?.join(" | ") || "";
+  // Country details
+  const { name } = useParams();
+  const formattedName = name?.replace(/\s+/g, "").toLowerCase();
 
-  const COUNTRY_CURRENCIES = CountryObject?.currencies
-    ? Object.entries(CountryObject.currencies)
-        .map(([code, currency]) => `${currency.name} (${code})`)
+  const country = data.find(
+    (c) =>
+      c.name?.common
+        ?.replace(/\s+/g, "")
+        .toLowerCase() === formattedName
+  );
+
+  const COUNTRY_NAME = country?.name?.common || "";
+  const COUNTRY_OFFICIAL_NAME = country?.name?.official || "";
+  const COUNTRY_FLAG = country?.flags?.svg || "";
+  const COUNTRY_POPULATION = country?.population?.toLocaleString() || "N/A";
+  const COUNTRY_REGION = country?.region || "N/A";
+  const COUNTRY_SUB_REGION = country?.subregion || "N/A";
+  const COUNTRY_CAPITAL = country?.capital?.join(", ") || "N/A";
+  const COUNTRY_TLD = country?.tld?.join(" | ") || "N/A";
+
+  const COUNTRY_CURRENCIES = country?.currencies
+    ? Object.entries(country.currencies)
+        .map(([code, cur]) => `${cur.name} (${code})`)
         .join(", ")
-    : "";
+    : "N/A";
 
-  const COUNTRY_LANGUAGES = CountryObject?.languages
-    ? Object.values(CountryObject.languages).join(", ")
-    : "";
+  const COUNTRY_LANGUAGES = country?.languages
+    ? Object.values(country.languages).join(", ")
+    : "N/A";
 
   return (
     <AppContext.Provider
@@ -105,9 +87,9 @@ function AppProvider({ children }) {
         data,
         displayedCountries,
         handleSearchChange,
+        handleSelectChange,
         searchQuery,
         selectedRegion,
-        handleSelectChange,
 
         COUNTRY_NAME,
         COUNTRY_OFFICIAL_NAME,
