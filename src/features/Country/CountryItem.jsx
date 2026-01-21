@@ -1,19 +1,24 @@
-import { useApp } from "../../context/useApp";
 import Box, { Label } from "../../ui/Box";
 
-function CountryItem() {
-  const {
-    COUNTRY_NAME,
-    COUNTRY_OFFICIAL_NAME,
-    COUNTRY_FLAG,
-    COUNTRY_POPULATION,
-    COUNTRY_REGION,
-    COUNTRY_SUB_REGION,
-    COUNTRY_CAPITAL,
-    COUNTRY_TLD,
-    COUNTRY_LANGUAGES,
-    COUNTRY_CURRENCIES,
-  } = useApp();
+function CountryItem({ country }) {
+  const COUNTRY_NAME = country?.name?.common;
+  const COUNTRY_OFFICIAL_NAME = country?.name?.official;
+  const COUNTRY_FLAG = country?.flags?.svg;
+  const COUNTRY_POPULATION = country?.population?.toLocaleString();
+  const COUNTRY_REGION = country?.region;
+  const COUNTRY_SUB_REGION = country?.subregion;
+  const COUNTRY_CAPITAL = country?.capital?.join(", ") || "N/A";
+  const COUNTRY_TLD = country?.tld?.join(" | ") || "N/A";
+
+  const COUNTRY_CURRENCIES = country?.currencies
+    ? Object.entries(country.currencies)
+        .map(([code, cur]) => `${cur.name} (${code})`)
+        .join(", ")
+    : "N/A";
+
+  const COUNTRY_LANGUAGES = country?.languages
+    ? Object.values(country.languages).join(", ")
+    : "N/A";
 
   return (
     <>
@@ -24,48 +29,21 @@ function CountryItem() {
       />
 
       <div className="py-5 mb-20 sm:mb-0 h-fit">
-        <h1 className="text-3xl pb-7 md:pb-0 font-800 dark:text-white text-very-dark-blue-text">{COUNTRY_NAME}</h1>
-        <div className="flex flex-col gap-10 sm:gap-16 lg:gap-8 sm:flex-row md:gap-18 text-very-dark-blue-text">
+        <h1 className="text-3xl pb-7 font-800">{COUNTRY_NAME}</h1>
+
+        <div className="flex flex-col gap-10 sm:flex-row">
           <div className="countryDetails">
-            <Box>
-              <Label className="bg-red-400" bold>
-                Native Name:
-              </Label>
-              <Label lighter>{COUNTRY_OFFICIAL_NAME}</Label>
-            </Box>
-            <Box>
-              <Label bold>population:</Label>
-              <Label lighter>{COUNTRY_POPULATION}</Label>
-            </Box>
-            <Box>
-              <Label bold>region:</Label>
-              <Label lighter>{COUNTRY_REGION}</Label>
-            </Box>
-            <Box>
-              <Label bold>Sub Region:</Label>
-              <Label lighter>{COUNTRY_SUB_REGION}</Label>
-            </Box>
-            <Box>
-              <Label bold>capital:</Label>
-              <Label lighter>{COUNTRY_CAPITAL}</Label>
-            </Box>
+            <Box><Label bold>Native Name:</Label><Label lighter>{COUNTRY_OFFICIAL_NAME}</Label></Box>
+            <Box><Label bold>Population:</Label><Label lighter>{COUNTRY_POPULATION}</Label></Box>
+            <Box><Label bold>Region:</Label><Label lighter>{COUNTRY_REGION}</Label></Box>
+            <Box><Label bold>Sub Region:</Label><Label lighter>{COUNTRY_SUB_REGION}</Label></Box>
+            <Box><Label bold>Capital:</Label><Label lighter>{COUNTRY_CAPITAL}</Label></Box>
           </div>
 
           <div className="countryDetails">
-            <Box>
-              <Label bold>Top Level Domain:</Label>
-              <Label lighter>{COUNTRY_TLD}</Label>
-            </Box>
-
-            <Box>
-              <Label bold>Currencies:</Label>
-              <Label lighter>{COUNTRY_CURRENCIES}</Label>
-            </Box>
-
-            <Box>
-              <Label bold>Languages:</Label>
-              <Label lighter>{COUNTRY_LANGUAGES}</Label>
-            </Box>
+            <Box><Label bold>Top Level Domain:</Label><Label lighter>{COUNTRY_TLD}</Label></Box>
+            <Box><Label bold>Currencies:</Label><Label lighter>{COUNTRY_CURRENCIES}</Label></Box>
+            <Box><Label bold>Languages:</Label><Label lighter>{COUNTRY_LANGUAGES}</Label></Box>
           </div>
         </div>
       </div>
