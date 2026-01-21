@@ -59,11 +59,12 @@ function AppProvider({ children }) {
   };
 
   // ===== FINAL DISPLAYED COUNTRIES =====
-  const displayedCountries = (
-    searchQuery.length > 0 ? filteredCountries : data
-  ).filter((country) =>
-    selectedRegion ? country.region === selectedRegion : true
-  );
+  const displayedCountries = (searchQuery ? filteredCountries : data).filter(
+  (country) => {
+    if (!selectedRegion) return true;
+    return country.region === selectedRegion.value;
+  }
+);
 
   // ===== COUNTRY DETAILS PAGE =====
   const { name } = useParams();
